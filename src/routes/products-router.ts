@@ -1,6 +1,6 @@
 import {Request, Response, Router} from "express";
+import {productsRepository} from "../repositories/products-repository";
 
-const products = [{id: 1, title: 'tomato'}, {id: 2, title: 'orange'}]
 
 export const productsRouter = Router({})
 
@@ -8,9 +8,9 @@ export const productsRouter = Router({})
 * который как модуль можно прилепить к нашему приложению.
  */
 
-productsRouter.get('/', (req: Request, res: Response) => {
+/*productsRouter.get('/', (req: Request, res: Response) => {
     res.send(products)
-})
+})*/
 /*// если бы делали для одного, было бы так, это хардкод,
 // но мы будем подставлять переменные
 // мы не будем генерить тысячу эндпойнтов
@@ -33,38 +33,37 @@ app.get('/products/tomato', (req: Request, res: Response) => {
 * в orange - на позиции 0, т.е. больше -1
 * МИН 21.17 - ДАЛЬШЕ РАСПАРСИТЬ
 * */
+
+
+
+/* Он принял из query-запроса title, передал этот тайтл в репозиторий.
+* Говорит, эй, репозиторий, я не знаю, как ты хранишь данные,
+* но найди мне этот продукт и верни его с помощью ретурна
+* Дальше я беру эти продукты и засовываю в сенд. */
 productsRouter.get('/', (req: Request, res: Response) => {
-    /*если тайтл присутствует, нужно вернуть не все продукты, а нужно их попробовать отфильтровать*/
-    if (req.query.title) {
-        /*только продукты, где индекс слова, которое сюда прилетело (req.query.title) > -1, оно прилетит в браузер */
-        let searchString = req.query.title.toString();
-        res.send(products.filter(p => p.title.indexOf(searchString) > -1))
-        /*если тайтла нет, вернуть все продукты целиком*/
-    } else {
-        res.send(products)
-    }
+    //мы передаем title, если он есть, вызови toString(), если нет, все закончится
+    //на undefined, передастся внутрь foundProducts undefined.
+    const foundProducts = productsRepository.findProducts(req.query.title?.toString())
+    res.send(foundProducts)
 })
+
 productsRouter.post('/', (req: Request, res: Response) => {
-    const newProduct = {
-        id: +(new Date()),
-        title: req.body.title
-    }
-    products.push(newProduct)
+    const newProduct = productsRepository.createProduct(req.body.title)
     res.status(201).send(newProduct)
 })
 // это реализация с переменной.
 productsRouter.get('/:id', (req: Request, res: Response) => {
-    let product = products.find(p => p.id === +req.params.id)
-    if (product) {
+    let product = productsRepository.findProductById(+req.params.id)
+    if (product){
         res.send(product)
     } else {
         res.send(404)
     }
 })
 productsRouter.put('/:id', (req: Request, res: Response) => {
-    let product = products.find(p => p.id === +req.params.id)
-    if (product) {
-        product.title = req.body.title
+    const isUpdated = productsRepository.updateProduct(+req.params.id, req.body.title)
+    if (isUpdated) {
+        const product = productsRepository.findProductById(+req.params.id)
         res.send(product)
     } else {
         res.send(404)
@@ -85,12 +84,11 @@ productsRouter.put('/:id', (req: Request, res: Response) => {
 *
 * */
 productsRouter.delete('/:id', (req: Request, res: Response) => {
-    for (let i = 0; i < products.length; i++) {
-        if (products[i].id === +req.params.id) {
-            products.splice(i, 1);
-            res.send(204)
-            return;
-        }
+    const isDeleted = productsRepository.deleteProduct(+req.params.id)
+    if (isDeleted) {
+        res.send(204)
+    } else {
+        res.send(404)
     }
-    res.send(404)
+
 })

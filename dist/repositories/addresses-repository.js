@@ -1,6 +1,14 @@
 "use strict";
-//const products = [{id: 1, title: 'tomato'}, {id: 2, title: 'orange'}]
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.productsRepository = void 0;
-exports.productsRepository = {};
+exports.addressesRepository = void 0;
+const addresses = [{ id: 1, value: 'Lenina, 14' }, { id: 2, value: 'Pushkina, 3' }];
+exports.addressesRepository = {
+    findAddresses() {
+        return addresses;
+    },
+    findAddressById(id) {
+        let address = addresses.find(a => a.id === id);
+        return address;
+    }
+};
 //# sourceMappingURL=addresses-repository.js.map

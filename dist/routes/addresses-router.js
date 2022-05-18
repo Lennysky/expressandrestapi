@@ -2,13 +2,14 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.addressesRouter = void 0;
 const express_1 = require("express");
-const addresses = [{ id: 1, value: 'Lenina, 14' }, { id: 2, value: 'Pushkina, 3' }];
+const addresses_repository_1 = require("../repositories/addresses-repository");
 exports.addressesRouter = (0, express_1.Router)({});
 exports.addressesRouter.get('/', (req, res) => {
+    const addresses = addresses_repository_1.addressesRepository.findAddresses();
     res.send(addresses);
 });
 exports.addressesRouter.get('/:id', (req, res) => {
-    let address = addresses.find(a => a.id === +req.params.id);
+    let address = addresses_repository_1.addressesRepository.findAddressById(+req.params.id);
     if (address) {
         res.send(address);
     }

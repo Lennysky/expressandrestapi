@@ -2,14 +2,14 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.productsRouter = void 0;
 const express_1 = require("express");
-const products = [{ id: 1, title: 'tomato' }, { id: 2, title: 'orange' }];
+const products_repository_1 = require("../repositories/products-repository");
 exports.productsRouter = (0, express_1.Router)({});
 /*мы обращаемся уже не к арр, а настраиваем отдельный кусок, productsRouter,
 * который как модуль можно прилепить к нашему приложению.
  */
-exports.productsRouter.get('/', (req, res) => {
-    res.send(products);
-});
+/*productsRouter.get('/', (req: Request, res: Response) => {
+    res.send(products)
+})*/
 /*// если бы делали для одного, было бы так, это хардкод,
 // но мы будем подставлять переменные
 // мы не будем генерить тысячу эндпойнтов
@@ -32,29 +32,24 @@ app.get('/products/tomato', (req: Request, res: Response) => {
 * в orange - на позиции 0, т.е. больше -1
 * МИН 21.17 - ДАЛЬШЕ РАСПАРСИТЬ
 * */
+/* Он принял из query-запроса title, передал этот тайтл в репозиторий.
+* Говорит, эй, репозиторий, я не знаю, как ты хранишь данные,
+* но найди мне этот продукт и верни его с помощью ретурна
+* Дальше я беру эти продукты и засовываю в сенд. */
 exports.productsRouter.get('/', (req, res) => {
-    /*если тайтл присутствует, нужно вернуть не все продукты, а нужно их попробовать отфильтровать*/
-    if (req.query.title) {
-        /*только продукты, где индекс слова, которое сюда прилетело (req.query.title) > -1, оно прилетит в браузер */
-        let searchString = req.query.title.toString();
-        res.send(products.filter(p => p.title.indexOf(searchString) > -1));
-        /*если тайтла нет, вернуть все продукты целиком*/
-    }
-    else {
-        res.send(products);
-    }
+    var _a;
+    //мы передаем title, если он есть, вызови toString(), если нет, все закончится
+    //на undefined, передастся внутрь foundProducts undefined.
+    const foundProducts = products_repository_1.productsRepository.findProducts((_a = req.query.title) === null || _a === void 0 ? void 0 : _a.toString());
+    res.send(foundProducts);
 });
 exports.productsRouter.post('/', (req, res) => {
-    const newProduct = {
-        id: +(new Date()),
-        title: req.body.title
-    };
-    products.push(newProduct);
+    const newProduct = products_repository_1.productsRepository.createProduct(req.body.title);
     res.status(201).send(newProduct);
 });
 // это реализация с переменной.
 exports.productsRouter.get('/:id', (req, res) => {
-    let product = products.find(p => p.id === +req.params.id);
+    let product = products_repository_1.productsRepository.findProductById(+req.params.id);
     if (product) {
         res.send(product);
     }
@@ -63,9 +58,9 @@ exports.productsRouter.get('/:id', (req, res) => {
     }
 });
 exports.productsRouter.put('/:id', (req, res) => {
-    let product = products.find(p => p.id === +req.params.id);
-    if (product) {
-        product.title = req.body.title;
+    const isUpdated = products_repository_1.productsRepository.updateProduct(+req.params.id, req.body.title);
+    if (isUpdated) {
+        const product = products_repository_1.productsRepository.findProductById(+req.params.id);
         res.send(product);
     }
     else {
@@ -87,13 +82,12 @@ exports.productsRouter.put('/:id', (req, res) => {
 *
 * */
 exports.productsRouter.delete('/:id', (req, res) => {
-    for (let i = 0; i < products.length; i++) {
-        if (products[i].id === +req.params.id) {
-            products.splice(i, 1);
-            res.send(204);
-            return;
-        }
+    const isDeleted = products_repository_1.productsRepository.deleteProduct(+req.params.id);
+    if (isDeleted) {
+        res.send(204);
     }
-    res.send(404);
+    else {
+        res.send(404);
+    }
 });
 //# sourceMappingURL=products-router.js.map

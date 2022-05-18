@@ -1,5 +1,11 @@
-//const products = [{id: 1, title: 'tomato'}, {id: 2, title: 'orange'}]
+const addresses = [{id: 1, value: 'Lenina, 14'}, {id: 2, value: 'Pushkina, 3'}]
 
-export const productsRepository = {
-
+export const addressesRepository = {
+    findAddresses () {
+        return addresses
+    },
+    findAddressById (id: number) {
+        let address = addresses.find(a => a.id === id)
+        return address
+    }
 }
